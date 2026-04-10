@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pac-Countdown</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Space+Grotesk:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <h1>PAC-COUNTDOWN</h1>
+      </header>
+
+      <main class="app-card">
+        <section class="stage-panel">
+          <div class="stage-header">
+            <div class="stage-header-top">
+              <h2>Pac Stage</h2>
+              <div class="zoom-controls" aria-label="스테이지 확대 축소">
+                <button id="zoomOutBtn" class="zoom-btn" type="button">-</button>
+                <span id="zoomLabel">100%</span>
+                <button id="zoomInBtn" class="zoom-btn" type="button">+</button>
+              </div>
+            </div>
+            <div class="controls-row">
+              <div class="field-group">
+                <label for="hoursInput">시간</label>
+                <div class="time-input-row">
+                  <input
+                    id="hoursInput"
+                    type="number"
+                    min="0.25"
+                    step="0.25"
+                    value="4"
+                    inputmode="decimal"
+                  />
+                </div>
+              </div>
+
+              <div class="preset-group" aria-label="추천 시간">
+                <button class="preset-btn" data-hours="0.25">15분</button>
+                <button class="preset-btn" data-hours="1">1시간</button>
+                <button class="preset-btn active" data-hours="4">4시간</button>
+                <button class="preset-btn" data-hours="8">8시간</button>
+              </div>
+
+              <div class="action-row">
+                <button id="startBtn" class="primary-btn">시작</button>
+                <button id="pauseBtn" class="secondary-btn">일시정지</button>
+                <button id="resetBtn" class="ghost-btn">리셋</button>
+              </div>
+
+              <div class="stats-grid">
+                <article class="stat-card">
+                  <span class="stat-label">남은 시간</span>
+                  <strong id="timeLabel">04:00:00</strong>
+                </article>
+                <article class="stat-card">
+                  <span class="stat-label">남은 점</span>
+                  <strong id="dotsLabel">14,400</strong>
+                </article>
+                <article class="stat-card">
+                  <span class="stat-label">진행률</span>
+                  <strong id="progressLabel">0%</strong>
+                </article>
+              </div>
+            </div>
+            <p id="stageMessage"></p>
+            <span class="legend"></span>
+          </div>
+          <canvas id="stageCanvas" width="1120" height="640"></canvas>
+        </section>
+      </main>
+    </div>
+
+    <script src="./script.js"></script>
+  </body>
+</html>
