@@ -144,10 +144,6 @@
               <div class="header-tools">
                 <div class="stats-grid stage-stats">
                   <article class="stat-card">
-                    <span class="stat-label">남은 시간</span>
-                    <strong id="timeLabel">04:00:00</strong>
-                  </article>
-                  <article class="stat-card">
                     <span class="stat-label">남은 점</span>
                     <strong id="dotsLabel">14,400</strong>
                   </article>
@@ -185,6 +181,29 @@
         <h3 id="clearTitle">CLEAR!</h3>
         <p class="clear-copy">팩맨이 모든 점을 먹었습니다.</p>
         <button id="clearCloseBtn" class="clear-close-btn" type="button">확인</button>
+      </div>
+    </div>
+
+    <div
+      id="lunchModal"
+      class="clear-modal lunch-modal hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="lunchTitle"
+    >
+      <div class="clear-modal-backdrop"></div>
+      <div class="clear-modal-card">
+        <div class="clear-stars" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <p class="clear-kicker">LUNCH BREAK PREVIEW</p>
+        <h3 id="lunchTitle">신나는 점심시간!</h3>
+        <p class="clear-copy">팩맨은 계속 점을 먹는 중이에요. 잠깐 쉬어가도 좋아요.</p>
+        <button id="lunchCloseBtn" class="clear-close-btn" type="button">확인</button>
       </div>
     </div>
 

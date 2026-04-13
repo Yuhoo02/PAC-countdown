@@ -25,6 +25,8 @@ const speedButtons = [...document.querySelectorAll(".speed-btn")];
 const toggleSettingsBtn = document.querySelector("#toggleSettingsBtn");
 const clearModal = document.querySelector("#clearModal");
 const clearCloseBtn = document.querySelector("#clearCloseBtn");
+const lunchModal = document.querySelector("#lunchModal");
+const lunchCloseBtn = document.querySelector("#lunchCloseBtn");
 const ctx = canvas.getContext("2d");
 
 const state = {
@@ -48,6 +50,7 @@ const state = {
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 7;
 const ZOOM_STEP = 1;
+const LUNCH_MODAL_STORAGE_KEY = "pac-countdown-lunch-modal-date";
 
 function syncButtonStates() {
   document.body.dataset.settingsCollapsed = String(state.settingsCollapsed);
@@ -206,26 +209,32 @@ function getProgressRatio() {
   return Math.min(1, getElapsedMs() / (state.totalSeconds * 1000));
 }
 
+function hasCountdownStarted() {
+  return !state.paused || state.remainingMs < state.totalSeconds * 1000;
+}
+
 function getLeadPoint() {
   const firstDot = state.dots[0];
   const secondDot = state.dots[1];
+  const stagePadding = 34;
 
   if (!firstDot) {
-    return { x: 0, y: 0 };
+    return { x: stagePadding, y: stagePadding };
   }
 
   if (!secondDot) {
-    return { x: Math.max(18, firstDot.x - 24), y: firstDot.y };
+    return { x: Math.max(stagePadding, firstDot.x - 24), y: firstDot.y };
   }
 
   return {
-    x: firstDot.x - (secondDot.x - firstDot.x),
-    y: firstDot.y - (secondDot.y - firstDot.y),
+    x: Math.max(stagePadding, Math.min(canvas.width - stagePadding, firstDot.x - (secondDot.x - firstDot.x))),
+    y: Math.max(stagePadding, Math.min(canvas.height - stagePadding, firstDot.y - (secondDot.y - firstDot.y))),
   };
 }
 
 function getEatenDotsCount() {
-  return Math.min(state.dots.length, Math.floor(getProgressRatio() * state.dots.length));
+  const startedOffset = hasCountdownStarted() ? 1 : 0;
+  return Math.min(state.dots.length, Math.floor(getProgressRatio() * state.dots.length) + startedOffset);
 }
 
 function drawBackgroundGrid() {
@@ -266,12 +275,21 @@ function drawDots() {
 
 function getPacmanPosition() {
   if (!state.dots.length) {
-    return null;
+    return {
+      x: 34,
+      y: 34,
+      angle: 0,
+      mouth: 0.25,
+    };
   }
 
   const leadPoint = getLeadPoint();
   const totalSegments = state.dots.length;
-  const traveledSegments = Math.min(totalSegments, Math.max(0, getProgressRatio() * totalSegments));
+  const startedOffset = hasCountdownStarted() ? 1 : 0;
+  const traveledSegments = Math.min(
+    totalSegments,
+    Math.max(0, getProgressRatio() * totalSegments + startedOffset)
+  );
 
   if (traveledSegments >= totalSegments) {
     const lastDot = state.dots[state.dots.length - 1];
@@ -521,7 +539,11 @@ function draw(now = performance.now()) {
 
 function syncStats() {
   const dotsLeft = Math.max(0, state.dots.length - getEatenDotsCount());
-  timeLabel.textContent = formatTime(state.remainingSeconds);
+
+  if (timeLabel) {
+    timeLabel.textContent = formatTime(state.remainingSeconds);
+  }
+
   dotsLabel.textContent = formatNumber(dotsLeft);
 
   const progress =
@@ -542,6 +564,36 @@ function showClearModal() {
 
 function hideClearModal() {
   clearModal.classList.add("hidden");
+}
+
+function hideLunchModal() {
+  lunchModal.classList.add("hidden");
+}
+
+function showLunchModal() {
+  lunchModal.classList.remove("hidden");
+}
+
+function getLocalDateKey(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function maybeShowLunchModal(now = new Date()) {
+  if (now.getHours() !== 12 || now.getMinutes() !== 0) {
+    return;
+  }
+
+  const todayKey = getLocalDateKey(now);
+
+  if (window.localStorage.getItem(LUNCH_MODAL_STORAGE_KEY) === todayKey) {
+    return;
+  }
+
+  showLunchModal();
+  window.localStorage.setItem(LUNCH_MODAL_STORAGE_KEY, todayKey);
 }
 
 function animate(now) {
@@ -734,6 +786,12 @@ clearModal.addEventListener("click", (event) => {
     hideClearModal();
   }
 });
+lunchCloseBtn.addEventListener("click", hideLunchModal);
+lunchModal.addEventListener("click", (event) => {
+  if (event.target === lunchModal || event.target.classList.contains("clear-modal-backdrop")) {
+    hideLunchModal();
+  }
+});
 speedButtons.forEach((button) => {
   button.addEventListener("click", () => {
     changeSpeed(Number(button.dataset.speed));
@@ -788,7 +846,11 @@ manualMinuteInput.addEventListener("input", () => {
 });
 
 window.addEventListener("resize", resizeCanvas);
+window.addEventListener("load", resizeCanvas);
 
 initializeTimer(getSelectedSeconds());
 updateModeUI();
 resizeCanvas();
+requestAnimationFrame(resizeCanvas);
+maybeShowLunchModal();
+window.setInterval(() => maybeShowLunchModal(), 1000);
