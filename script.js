@@ -22,6 +22,7 @@ const zoomInBtn = document.querySelector("#zoomInBtn");
 const zoomOutBtn = document.querySelector("#zoomOutBtn");
 const zoomLabel = document.querySelector("#zoomLabel");
 const speedButtons = [...document.querySelectorAll(".speed-btn")];
+const stageTimeToggleBtn = document.querySelector("#stageTimeToggleBtn");
 const toggleSettingsBtn = document.querySelector("#toggleSettingsBtn");
 const clearModal = document.querySelector("#clearModal");
 const clearCloseBtn = document.querySelector("#clearCloseBtn");
@@ -35,6 +36,7 @@ const state = {
   targetMinute: 0,
   manualPresetSeconds: null,
   speed: 1,
+  showStageTimeOverlay: true,
   settingsCollapsed: false,
   totalSeconds: 0,
   remainingSeconds: 0,
@@ -61,6 +63,8 @@ function syncButtonStates() {
   zoomInBtn.disabled = state.zoom >= MAX_ZOOM;
   zoomLabel.textContent = `${Math.round(state.zoom * 100)}%`;
   toggleSettingsBtn.setAttribute("aria-expanded", String(!state.settingsCollapsed));
+  stageTimeToggleBtn.classList.toggle("active", state.showStageTimeOverlay);
+  stageTimeToggleBtn.textContent = `중앙 시간 ${state.showStageTimeOverlay ? "ON" : "OFF"}`;
 
   speedButtons.forEach((button) => {
     button.classList.toggle("active", Number(button.dataset.speed) === state.speed);
@@ -417,7 +421,7 @@ function drawPacman() {
 }
 
 function drawStageTimeOverlay() {
-  if (state.totalSeconds <= 0) {
+  if (state.totalSeconds <= 0 || !state.showStageTimeOverlay) {
     return;
   }
 
@@ -766,6 +770,12 @@ function changeSpeed(nextSpeed) {
   draw();
 }
 
+function toggleStageTimeOverlay() {
+  state.showStageTimeOverlay = !state.showStageTimeOverlay;
+  syncButtonStates();
+  draw();
+}
+
 function toggleSettingsPanel() {
   state.settingsCollapsed = !state.settingsCollapsed;
   syncButtonStates();
@@ -778,6 +788,7 @@ resetBtn.addEventListener("click", resetCountdown);
 zoomInBtn.addEventListener("click", () => changeZoom(1));
 zoomOutBtn.addEventListener("click", () => changeZoom(-1));
 toggleSettingsBtn.addEventListener("click", toggleSettingsPanel);
+stageTimeToggleBtn.addEventListener("click", toggleStageTimeOverlay);
 manualModeBtn.addEventListener("click", () => setMode("manual"));
 clockModeBtn.addEventListener("click", () => setMode("clock"));
 clearCloseBtn.addEventListener("click", hideClearModal);

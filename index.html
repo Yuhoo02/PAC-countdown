@@ -22,6 +22,9 @@
                 <button id="clockModeBtn" class="mode-btn active" type="button">현실시간</button>
                 <button id="manualModeBtn" class="mode-btn" type="button">스톱워치</button>
               </div>
+              <button id="stageTimeToggleBtn" class="stage-time-toggle active" type="button">
+                중앙 시간 ON
+              </button>
               <div class="speed-group" aria-label="속도 설정">
                 <div class="speed-buttons">
                   <button
@@ -143,6 +146,10 @@
               <h2>Pac Stage</h2>
               <div class="header-tools">
                 <div class="stats-grid stage-stats">
+                  <article class="stat-card">
+                    <span class="stat-label">남은 시간</span>
+                    <strong id="timeLabel">04:00:00</strong>
+                  </article>
                   <article class="stat-card">
                     <span class="stat-label">남은 점</span>
                     <strong id="dotsLabel">14,400</strong>
