@@ -398,17 +398,53 @@ function drawPacman() {
   ctx.restore();
 }
 
-function drawBanner() {
-  const dotsLeft = Math.max(0, state.dots.length - getEatenDotsCount());
+function drawStageTimeOverlay() {
+  if (state.totalSeconds <= 0) {
+    return;
+  }
+
+  const centerX = canvas.width / 2;
+  const centerY = canvas.height / 2;
+  const overlayWidth = Math.min(canvas.width * 0.54, 520);
+  const overlayHeight = Math.min(canvas.height * 0.18, 120);
+  const radius = 18;
+  const left = centerX - overlayWidth / 2;
+  const top = centerY - overlayHeight / 2;
+  const gradient = ctx.createRadialGradient(centerX, centerY, overlayHeight * 0.12, centerX, centerY, overlayWidth * 0.56);
+
+  gradient.addColorStop(0, "rgba(3, 8, 18, 0.36)");
+  gradient.addColorStop(0.58, "rgba(3, 8, 18, 0.18)");
+  gradient.addColorStop(1, "rgba(3, 8, 18, 0)");
 
   ctx.save();
-  ctx.fillStyle = "rgba(8, 16, 30, 0.78)";
-  ctx.fillRect(16, canvas.height - 58, 272, 42);
-  ctx.strokeStyle = "rgba(85, 214, 255, 0.18)";
-  ctx.strokeRect(16, canvas.height - 58, 272, 42);
-  ctx.fillStyle = "#f7f4df";
-  ctx.font = `${Math.max(14, Math.round(canvas.width / 72))}px "Space Grotesk", sans-serif`;
-  ctx.fillText(`DOTS LEFT ${formatNumber(dotsLeft)}`, 30, canvas.height - 31);
+  ctx.beginPath();
+  ctx.moveTo(left + radius, top);
+  ctx.lineTo(left + overlayWidth - radius, top);
+  ctx.quadraticCurveTo(left + overlayWidth, top, left + overlayWidth, top + radius);
+  ctx.lineTo(left + overlayWidth, top + overlayHeight - radius);
+  ctx.quadraticCurveTo(
+    left + overlayWidth,
+    top + overlayHeight,
+    left + overlayWidth - radius,
+    top + overlayHeight
+  );
+  ctx.lineTo(left + radius, top + overlayHeight);
+  ctx.quadraticCurveTo(left, top + overlayHeight, left, top + overlayHeight - radius);
+  ctx.lineTo(left, top + radius);
+  ctx.quadraticCurveTo(left, top, left + radius, top);
+  ctx.closePath();
+  ctx.fillStyle = gradient;
+  ctx.shadowColor = "rgba(3, 8, 18, 0.34)";
+  ctx.shadowBlur = 52;
+  ctx.fill();
+
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.font = `700 ${Math.max(42, Math.round(canvas.width / 15))}px "Space Grotesk", sans-serif`;
+  ctx.fillStyle = "rgba(247, 244, 223, 0.34)";
+  ctx.shadowColor = "rgba(255, 255, 255, 0.18)";
+  ctx.shadowBlur = 30;
+  ctx.fillText(formatTime(state.remainingSeconds), centerX, centerY);
   ctx.restore();
 }
 
@@ -479,7 +515,7 @@ function draw(now = performance.now()) {
   drawDots();
   drawPacman();
   ctx.restore();
-  drawBanner();
+  drawStageTimeOverlay();
   drawMiniMap();
 }
 
@@ -548,7 +584,44 @@ function initializeTimer(totalSeconds) {
 }
 
 function startCountdown() {
+  const hasActiveProgress = state.paused && state.remainingSeconds > 0 && state.remainingSeconds < state.totalSeconds;
+
+  if (hasActiveProgress && state.mode === "manual") {
+    cancelAnimationFrame(state.rafId);
+    hideClearModal();
+    state.paused = false;
+    state.endTime = Date.now() + state.pausedRemainingMs;
+
+    updateStageMessage(
+      state.mode === "clock"
+        ? `${String(state.targetHour).padStart(2, "0")}:${String(state.targetMinute).padStart(2, "0")}까지 다시 진행합니다.`
+        : `${formatTime(state.remainingSeconds)} 동안 다시 진행합니다.`
+    );
+    syncButtonStates();
+    state.rafId = requestAnimationFrame(animate);
+    return;
+  }
+
   const selectedSeconds = getSelectedSeconds();
+
+  if (hasActiveProgress && state.mode === "clock" && selectedSeconds > 0 && selectedSeconds < state.totalSeconds) {
+    cancelAnimationFrame(state.rafId);
+    hideClearModal();
+    state.pausedRemainingMs = selectedSeconds * 1000;
+    state.remainingMs = state.pausedRemainingMs;
+    state.remainingSeconds = selectedSeconds;
+    state.paused = false;
+    state.endTime = Date.now() + state.pausedRemainingMs;
+
+    updateStageMessage(
+      `${String(state.targetHour).padStart(2, "0")}:${String(state.targetMinute).padStart(2, "0")}까지 다시 진행합니다.`
+    );
+    syncStats();
+    syncButtonStates();
+    draw();
+    state.rafId = requestAnimationFrame(animate);
+    return;
+  }
 
   if (!selectedSeconds) {
     updateStageMessage(
