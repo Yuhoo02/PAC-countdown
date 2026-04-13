@@ -953,20 +953,30 @@ button:disabled {
 
 @media (max-width: 640px) {
   body {
-    height: auto;
-    overflow: auto;
+    height: 100dvh;
+    overflow: hidden;
   }
 
   .page-shell {
     width: min(100% - 18px, 1280px);
-    height: auto;
+    height: 100dvh;
     padding-top: 8px;
     padding-bottom: 8px;
+  }
+
+  .app-card {
+    min-height: 0;
+    height: 100%;
   }
 
   .settings-panel,
   .stage-panel {
     border-radius: 4px;
+  }
+
+  .stage-panel {
+    flex: 1 1 auto;
+    min-height: 0;
   }
 
   .controls-row {
@@ -1002,19 +1012,19 @@ button:disabled {
   }
 
   .stage-stats .stat-card:first-child {
-    min-width: 64px;
+    min-width: 96px;
   }
 
   .stage-stats .stat-card:last-child {
-    min-width: 48px;
+    min-width: 70px;
   }
 
   .stage-stats .stat-label {
-    font-size: 0.34rem;
+    font-size: 0.5rem;
   }
 
   .stage-stats .stat-card strong {
-    font-size: 0.44rem;
+    font-size: 0.66rem;
   }
 
   .zoom-controls {
@@ -1058,8 +1068,8 @@ button:disabled {
   }
 
   #stageCanvas {
-    height: 52vh;
-    min-height: 260px;
+    height: 100%;
+    min-height: 0;
   }
 
   .clear-modal {
