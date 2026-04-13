@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pac-Countdown</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Space+Grotesk:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <main class="app-card">
+        <section class="settings-panel" id="settingsPanel">
+          <div class="settings-body" id="settingsBody">
+            <div class="settings-tools">
+              <div class="mode-group" aria-label="카운트다운 방식">
+                <button id="clockModeBtn" class="mode-btn active" type="button">현실시간</button>
+                <button id="manualModeBtn" class="mode-btn" type="button">스톱워치</button>
+              </div>
+              <div class="speed-group" aria-label="속도 설정">
+                <div class="speed-buttons">
+                  <button
+                    class="speed-btn tooltip-trigger active"
+                    data-speed="1"
+                    data-tooltip="1초에 점 1개를 먹는 기본 속도입니다."
+                    type="button"
+                  >
+                    1x
+                  </button>
+                  <button
+                    class="speed-btn tooltip-trigger"
+                    data-speed="2"
+                    data-tooltip="1초에 점 2개를 먹는 것처럼 보이는 빠른 속도입니다."
+                    type="button"
+                  >
+                    2x
+                  </button>
+                  <button
+                    class="speed-btn tooltip-trigger"
+                    data-speed="3"
+                    data-tooltip="1초에 점 3개를 먹는 것처럼 보이는 가장 빠른 속도입니다."
+                    type="button"
+                  >
+                    3x
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="controls-row">
+              <div class="field-group">
+                <label for="manualHourInput">시간 설정</label>
+                <div class="clock-time-row">
+                  <input
+                    id="manualHourInput"
+                    type="number"
+                    min="0"
+                    max="23"
+                    step="1"
+                    value="0"
+                    inputmode="numeric"
+                  />
+                  <span>:</span>
+                  <input
+                    id="manualMinuteInput"
+                    type="number"
+                    min="0"
+                    max="59"
+                    step="10"
+                    value="00"
+                    inputmode="numeric"
+                  />
+                  <span class="clock-until">동안</span>
+                </div>
+              </div>
+
+              <div id="manualPresetGroup" class="preset-group hidden" aria-label="추천 시간">
+                <button class="preset-btn" data-seconds="60">1분</button>
+                <button class="preset-btn" data-seconds="180">3분</button>
+                <button class="preset-btn" data-seconds="1800">30분</button>
+                <button class="preset-btn" data-seconds="3600">1시간</button>
+              </div>
+
+              <div id="clockTimeGroup" class="clock-time-group" aria-label="현실 시간 직접 입력">
+                <label for="targetHourInput">시간 설정</label>
+                <div class="clock-time-row">
+                  <input
+                    id="targetHourInput"
+                    type="number"
+                    min="0"
+                    max="23"
+                    step="1"
+                    value="17"
+                    inputmode="numeric"
+                  />
+                  <span>:</span>
+                  <input
+                    id="targetMinuteInput"
+                    type="number"
+                    min="0"
+                    max="59"
+                    step="10"
+                    value="0"
+                    inputmode="numeric"
+                  />
+                  <span class="clock-until">까지</span>
+                </div>
+              </div>
+
+              <div id="clockPresetGroup" class="preset-group" aria-label="현실 시간 목표">
+                <button class="preset-btn clock-btn active" data-target-hour="17">5pm</button>
+                <button class="preset-btn clock-btn" data-target-hour="18">6pm</button>
+              </div>
+
+              <div class="action-row">
+                <button id="startBtn" class="primary-btn">시작</button>
+                <button id="pauseBtn" class="secondary-btn">일시정지</button>
+                <button id="resetBtn" class="ghost-btn">리셋</button>
+              </div>
+
+            </div>
+          </div>
+          <button
+            id="toggleSettingsBtn"
+            class="panel-toggle-btn"
+            type="button"
+            aria-expanded="true"
+            aria-label="설정 패널 접기 또는 펼치기"
+          >
+            <span class="panel-toggle-logo">PAC-COUNTDOWN</span>
+            <span class="toggle-arrow">▲</span>
+          </button>
+        </section>
+
+        <section class="stage-panel">
+          <div class="stage-header">
+            <div class="stage-header-top">
+              <h2>Pac Stage</h2>
+              <div class="header-tools">
+                <div class="stats-grid stage-stats">
+                  <article class="stat-card">
+                    <span class="stat-label">남은 시간</span>
+                    <strong id="timeLabel">04:00:00</strong>
+                  </article>
+                  <article class="stat-card">
+                    <span class="stat-label">남은 점</span>
+                    <strong id="dotsLabel">14,400</strong>
+                  </article>
+                  <article class="stat-card">
+                    <span class="stat-label">진행률</span>
+                    <strong id="progressLabel">0%</strong>
+                  </article>
+                </div>
+                <div class="zoom-controls" aria-label="스테이지 확대 축소">
+                  <button id="zoomOutBtn" class="zoom-btn" type="button">-</button>
+                  <span id="zoomLabel">100%</span>
+                  <button id="zoomInBtn" class="zoom-btn" type="button">+</button>
+                </div>
+              </div>
+            </div>
+            <p id="stageMessage"></p>
+            <span class="legend"></span>
+          </div>
+          <canvas id="stageCanvas" width="1120" height="640"></canvas>
+        </section>
+      </main>
+    </div>
+
+    <div id="clearModal" class="clear-modal hidden" role="dialog" aria-modal="true" aria-labelledby="clearTitle">
+      <div class="clear-modal-backdrop"></div>
+      <div class="clear-modal-card">
+        <div class="clear-stars" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <p class="clear-kicker">GAME COMPLETED</p>
+        <h3 id="clearTitle">CLEAR!</h3>
+        <p class="clear-copy">팩맨이 모든 점을 먹었습니다.</p>
+        <button id="clearCloseBtn" class="clear-close-btn" type="button">확인</button>
+      </div>
+    </div>
+
+    <script src="./script.js"></script>
+  </body>
+</html>
