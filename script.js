@@ -36,7 +36,7 @@ const state = {
   targetMinute: 0,
   manualPresetSeconds: null,
   speed: 1,
-  showStageTimeOverlay: true,
+  showStageTimeOverlay: false,
   settingsCollapsed: false,
   totalSeconds: 0,
   remainingSeconds: 0,
