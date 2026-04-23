@@ -23,6 +23,7 @@ const zoomOutBtn = document.querySelector("#zoomOutBtn");
 const zoomLabel = document.querySelector("#zoomLabel");
 const speedButtons = [...document.querySelectorAll(".speed-btn")];
 const stageTimeToggleBtn = document.querySelector("#stageTimeToggleBtn");
+const powerSavingToggleBtn = document.querySelector("#powerSavingToggleBtn");
 const toggleSettingsBtn = document.querySelector("#toggleSettingsBtn");
 const clearModal = document.querySelector("#clearModal");
 const clearCloseBtn = document.querySelector("#clearCloseBtn");
@@ -37,6 +38,7 @@ const state = {
   manualPresetSeconds: null,
   speed: 1,
   showStageTimeOverlay: false,
+  powerSaving: false,
   settingsCollapsed: false,
   totalSeconds: 0,
   remainingSeconds: 0,
@@ -45,6 +47,7 @@ const state = {
   paused: true,
   pausedRemainingMs: 0,
   rafId: 0,
+  powerSavingTimerId: 0,
   dots: [],
   zoom: 1,
 };
@@ -52,6 +55,7 @@ const state = {
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 7;
 const ZOOM_STEP = 1;
+const POWER_SAVING_FRAME_DELAY = 180;
 const LUNCH_MODAL_STORAGE_KEY = "pac-countdown-lunch-modal-date";
 
 function syncButtonStates() {
@@ -65,6 +69,8 @@ function syncButtonStates() {
   toggleSettingsBtn.setAttribute("aria-expanded", String(!state.settingsCollapsed));
   stageTimeToggleBtn.classList.toggle("active", state.showStageTimeOverlay);
   stageTimeToggleBtn.textContent = `중앙 시간 ${state.showStageTimeOverlay ? "ON" : "OFF"}`;
+  powerSavingToggleBtn.classList.toggle("active", state.powerSaving);
+  powerSavingToggleBtn.textContent = `절전모드 ${state.powerSaving ? "ON" : "OFF"}`;
 
   speedButtons.forEach((button) => {
     button.classList.toggle("active", Number(button.dataset.speed) === state.speed);
@@ -600,6 +606,24 @@ function maybeShowLunchModal(now = new Date()) {
   window.localStorage.setItem(LUNCH_MODAL_STORAGE_KEY, todayKey);
 }
 
+function stopAnimationLoop() {
+  cancelAnimationFrame(state.rafId);
+  window.clearTimeout(state.powerSavingTimerId);
+  state.rafId = 0;
+  state.powerSavingTimerId = 0;
+}
+
+function queueAnimationFrame() {
+  if (state.powerSaving) {
+    state.powerSavingTimerId = window.setTimeout(() => {
+      state.rafId = requestAnimationFrame(animate);
+    }, POWER_SAVING_FRAME_DELAY);
+    return;
+  }
+
+  state.rafId = requestAnimationFrame(animate);
+}
+
 function animate(now) {
   let shouldContinue = !state.paused;
 
@@ -624,7 +648,7 @@ function animate(now) {
   draw(now);
 
   if (shouldContinue) {
-    state.rafId = requestAnimationFrame(animate);
+    queueAnimationFrame();
   }
 }
 
@@ -643,7 +667,7 @@ function startCountdown() {
   const hasActiveProgress = state.paused && state.remainingSeconds > 0 && state.remainingSeconds < state.totalSeconds;
 
   if (hasActiveProgress && state.mode === "manual") {
-    cancelAnimationFrame(state.rafId);
+    stopAnimationLoop();
     hideClearModal();
     state.paused = false;
     state.endTime = Date.now() + state.pausedRemainingMs;
@@ -654,14 +678,14 @@ function startCountdown() {
         : `${formatTime(state.remainingSeconds)} 동안 다시 진행합니다.`
     );
     syncButtonStates();
-    state.rafId = requestAnimationFrame(animate);
+    queueAnimationFrame();
     return;
   }
 
   const selectedSeconds = getSelectedSeconds();
 
   if (hasActiveProgress && state.mode === "clock" && selectedSeconds > 0 && selectedSeconds < state.totalSeconds) {
-    cancelAnimationFrame(state.rafId);
+    stopAnimationLoop();
     hideClearModal();
     state.pausedRemainingMs = selectedSeconds * 1000;
     state.remainingMs = state.pausedRemainingMs;
@@ -675,7 +699,7 @@ function startCountdown() {
     syncStats();
     syncButtonStates();
     draw();
-    state.rafId = requestAnimationFrame(animate);
+    queueAnimationFrame();
     return;
   }
 
@@ -689,7 +713,7 @@ function startCountdown() {
     return;
   }
 
-  cancelAnimationFrame(state.rafId);
+  stopAnimationLoop();
 
   const isFreshStart = state.totalSeconds !== selectedSeconds || state.remainingSeconds === 0;
 
@@ -707,7 +731,7 @@ function startCountdown() {
       : `${formatTime(state.remainingSeconds)} 동안 팩맨이 점을 먹는 중입니다.`
   );
   syncButtonStates();
-  state.rafId = requestAnimationFrame(animate);
+  queueAnimationFrame();
 }
 
 function pauseCountdown() {
@@ -726,7 +750,7 @@ function pauseCountdown() {
 }
 
 function resetCountdown() {
-  cancelAnimationFrame(state.rafId);
+  stopAnimationLoop();
 
   const selectedSeconds = getSelectedSeconds();
   hideClearModal();
@@ -776,6 +800,16 @@ function toggleStageTimeOverlay() {
   draw();
 }
 
+function togglePowerSaving() {
+  state.powerSaving = !state.powerSaving;
+  syncButtonStates();
+
+  if (!state.paused) {
+    stopAnimationLoop();
+    queueAnimationFrame();
+  }
+}
+
 function toggleSettingsPanel() {
   state.settingsCollapsed = !state.settingsCollapsed;
   syncButtonStates();
@@ -789,6 +823,7 @@ zoomInBtn.addEventListener("click", () => changeZoom(1));
 zoomOutBtn.addEventListener("click", () => changeZoom(-1));
 toggleSettingsBtn.addEventListener("click", toggleSettingsPanel);
 stageTimeToggleBtn.addEventListener("click", toggleStageTimeOverlay);
+powerSavingToggleBtn.addEventListener("click", togglePowerSaving);
 manualModeBtn.addEventListener("click", () => setMode("manual"));
 clockModeBtn.addEventListener("click", () => setMode("clock"));
 clearCloseBtn.addEventListener("click", hideClearModal);

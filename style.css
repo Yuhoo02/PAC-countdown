@@ -262,7 +262,8 @@ body[data-settings-collapsed="true"] .toggle-arrow {
   display: block;
 }
 
-.stage-time-toggle {
+.stage-time-toggle,
+.power-saving-toggle {
   padding: 6px 10px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.06);
@@ -270,7 +271,8 @@ body[data-settings-collapsed="true"] .toggle-arrow {
   white-space: nowrap;
 }
 
-.stage-time-toggle.active {
+.stage-time-toggle.active,
+.power-saving-toggle.active {
   background: linear-gradient(180deg, rgba(85, 214, 255, 0.2), rgba(85, 214, 255, 0.1));
   color: var(--text);
   box-shadow:
